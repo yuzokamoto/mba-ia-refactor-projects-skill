@@ -1,31 +1,35 @@
-@baseUrl = http://localhost:3000
+@baseUrl = http://127.0.0.1:3000
+@adminToken = {{$processEnv ADMIN_TOKEN}}
+@password = {{$processEnv SEED_USER_PASSWORD}}
 
-### Checkout - sucesso
+### Checkout da conta inicial - sucesso
 POST {{baseUrl}}/api/checkout
 Content-Type: application/json
 
 {
-  "usr": "Guilherme",
-  "eml": "gui@fullcycle.com.br",
-  "pwd": "senhaforte",
+  "usr": "Leonan",
+  "eml": "leonan@fullcycle.com.br",
+  "pwd": "{{password}}",
   "c_id": 2,
-  "card": "4111222233334444"
+  "card": "4"
 }
 
-### Checkout - pagamento recusado
+### Checkout - pagamento recusado pela simulação
 POST {{baseUrl}}/api/checkout
 Content-Type: application/json
 
 {
-  "usr": "João",
-  "eml": "joao@teste.com",
-  "pwd": "123",
+  "usr": "Leonan",
+  "eml": "leonan@fullcycle.com.br",
+  "pwd": "{{password}}",
   "c_id": 1,
-  "card": "5111222233334444"
+  "card": "5"
 }
 
 ### Relatório financeiro administrativo
 GET {{baseUrl}}/api/admin/financial-report
+X-Admin-Token: {{adminToken}}
 
-### Deletar usuário
+### Exclusão de usuário, matrículas e pagamentos
 DELETE {{baseUrl}}/api/users/1
+X-Admin-Token: {{adminToken}}
