@@ -1,34 +1,28 @@
+"""Composição da aplicação, sem escrita no banco durante a importação."""
 from flask import Flask
 from flask_cors import CORS
-from database import db
-from routes.task_routes import task_bp
-from routes.user_routes import user_bp
-from routes.report_routes import report_bp
-import os, sys, json, datetime
+from config.settings import settings_from_environment
+from database import db, initialize_database
+from middlewares.error_handler import register_error_handlers
+from middlewares.json_request import ContractRequest
+from routes import register_routes
 
-app = Flask(__name__)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///tasks.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = 'super-secret-key-123'
+def create_app(settings=None):
+    app = Flask(__name__)
+    app.request_class = ContractRequest
+    app.config.from_mapping(settings_from_environment())
+    if settings is not None:
+        app.config.update(settings)
+    db.init_app(app)
+    CORS(app, origins=app.config['CORS_ORIGINS'])
+    register_routes(app)
+    register_error_handlers(app)
+    return app
 
-CORS(app)
-db.init_app(app)
-
-app.register_blueprint(task_bp)
-app.register_blueprint(user_bp)
-app.register_blueprint(report_bp)
-
-@app.route('/health')
-def health():
-    return {'status': 'ok', 'timestamp': str(datetime.datetime.now())}
-
-@app.route('/')
-def index():
-    return {'message': 'Task Manager API', 'version': '1.0'}
-
-with app.app_context():
-    db.create_all()
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    application = create_app()
+    initialize_database(application)
+    application.run(host=application.config['HOST'], port=5000,
+                    debug=application.config['DEBUG'])
