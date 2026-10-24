@@ -1,0 +1,5 @@
+interface:
+  display_name: "refactor-arch"
+  short_description: "Audit a legacy API and refactor it to MVC (3 phases)"
+policy:
+  allow_implicit_invocation: false
